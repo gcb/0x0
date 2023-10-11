@@ -377,7 +377,13 @@ def store_file(f, requested_expiration:  typing.Optional[int], addr, ua, secret:
 
     sf, isnew = File.store(f, requested_expiration, addr, ua, secret)
 
-    response = make_response(sf.geturl())
+    def format_response(sf, isnew):
+        return (sf.geturl()
+                + " expires=" + sf.expiration
+                + (" secret=" + sf.mgmt_token) if isnew else "")
+
+    response = make_response(format_response(sf, isnew))
+    response.headers["X-Url"] = sf.geturl()
     response.headers["X-Expires"] = sf.expiration
 
     if isnew:
